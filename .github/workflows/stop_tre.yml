@@ -29,12 +29,14 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           environment: ${{ vars.AZURE_ENVIRONMENT || 'AzureCloud' }}
 
+      - name: Show Azure context
+        run: |
+          az account show
+          az account set --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID || '' }}" || true
+
       - name: Stop TRE
-        uses: ./.github/actions/devcontainer_run_command
-        with:
-          COMMAND: "make tre-stop"
-          DEVCONTAINER_TAG: "latest"
-          ACR_NAME: ${{ secrets.ACR_NAME }}
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-          AZURE_ENVIRONMENT: ${{ vars.AZURE_ENVIRONMENT }}
+        env:
           TRE_ID: ${{ secrets.TRE_ID }}
+          LOCATION: ${{ vars.LOCATION }}
+        run: |
+          make tre-stop
