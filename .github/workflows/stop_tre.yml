@@ -1,0 +1,47 @@
+name: Stop Azure TRE
+
+on:
+  workflow_dispatch:
+    inputs:
+      environmentName:
+        description: The Github Actions environment to use
+        type: environment
+        default: CICD
+        required: true
+
+# Add this later when you're happy with manual runs:
+# on:
+#   schedule:
+#     - cron: "0 17 * * 1-5"   # 18:00 UK time during BST
+#     - cron: "0 17 * * 6,0"   # Weekend safety stop
+#   workflow_dispatch:
+
+concurrency: "tre-stop-${{ github.ref }}"
+
+jobs:
+  stop_tre:
+    name: Stop TRE
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environmentName }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          environment: ${{ vars.AZURE_ENVIRONMENT || 'AzureCloud' }}
+
+      - name: Stop TRE
+        uses: ./.github/actions/devcontainer_run_command
+        with:
+          COMMAND: "make tre-stop"
+          DEVCONTAINER_TAG: "latest"
+          CI_CACHE_ACR_NAME: ${{ secrets.CI_CACHE_ACR_NAME }}
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          AZURE_ENVIRONMENT: ${{ vars.AZURE_ENVIRONMENT }}
+          TRE_ID: ${{ secrets.TRE_ID }}
