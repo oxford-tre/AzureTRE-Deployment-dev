@@ -686,6 +686,7 @@ jobs:
           ref: ${{ inputs.prRef }}
 
       - name: Deploy firewall
+        if: false
         uses: ./.github/actions/devcontainer_run_command
         with:
           COMMAND: "make deploy-shared-service DIR=\\${AZURETRE_HOME}/templates/shared_services/firewall/ BUNDLE_TYPE=shared_service"
